@@ -15,6 +15,8 @@ When you have multiple unrelated failures (different test files, different subsy
 
 **Core principle:** Dispatch one agent per independent problem domain. Let them work concurrently.
 
+**For strategic orchestration decisions** (e.g., how many agents, what collaboration mode, complexity assessment), see skills/collaboration/orchestrating-multi-agent-work. This skill focuses on the tactical execution of parallel dispatch.
+
 ## When to Use
 
 ```dot
