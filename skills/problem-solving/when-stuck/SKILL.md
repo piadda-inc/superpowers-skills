@@ -28,6 +28,7 @@ digraph stuck_dispatch {
     assumptions [label="Solution feels forced?\n'This must be done this way'?\nStuck on assumptions?"];
     scale [label="Will this work at production?\nEdge cases unclear?\nUnsure of limits?"];
     bugs [label="Code behaving wrong?\nTest failing?\nUnexpected output?"];
+    overwhelmed [label="5+ independent issues?\nArchitecture decision?\nExploratory investigation?"];
 
     stuck -> complexity;
     stuck -> innovation;
@@ -35,6 +36,7 @@ digraph stuck_dispatch {
     stuck -> assumptions;
     stuck -> scale;
     stuck -> bugs;
+    stuck -> overwhelmed;
 
     complexity -> simp [label="yes"];
     innovation -> collision [label="yes"];
@@ -42,6 +44,7 @@ digraph stuck_dispatch {
     assumptions -> invert [label="yes"];
     scale -> scale_skill [label="yes"];
     bugs -> debug [label="yes"];
+    overwhelmed -> orchestrate [label="yes"];
 
     simp [label="skills/problem-solving/\nsimplification-cascades", shape=box, style="rounded,filled", fillcolor=lightgreen];
     collision [label="skills/problem-solving/\ncollision-zone-thinking", shape=box, style="rounded,filled", fillcolor=lightgreen];
@@ -49,6 +52,7 @@ digraph stuck_dispatch {
     invert [label="skills/problem-solving/\ninversion-exercise", shape=box, style="rounded,filled", fillcolor=lightgreen];
     scale_skill [label="skills/problem-solving/\nscale-game", shape=box, style="rounded,filled", fillcolor=lightgreen];
     debug [label="skills/debugging/\nsystematic-debugging", shape=box, style="rounded,filled", fillcolor=lightyellow];
+    orchestrate [label="skills/collaboration/\norchestrating-multi-agent-work", shape=box, style="rounded,filled", fillcolor=lightblue];
 }
 ```
 
@@ -62,6 +66,7 @@ digraph stuck_dispatch {
 | **Forced by assumptions** - "Must be done this way", can't question premise | skills/problem-solving/inversion-exercise |
 | **Scale uncertainty** - Will it work in production? Edge cases unclear? | skills/problem-solving/scale-game |
 | **Code broken** - Wrong behavior, test failing, unexpected output | skills/debugging/systematic-debugging |
+| **Overwhelmed by complexity** - 5+ issues, architecture decision, or exploratory investigation | skills/collaboration/orchestrating-multi-agent-work |
 | **Multiple independent problems** - Can parallelize investigation | skills/collaboration/dispatching-parallel-agents |
 | **Root cause unknown** - Symptom clear, cause hidden | skills/debugging/root-cause-tracing |
 
