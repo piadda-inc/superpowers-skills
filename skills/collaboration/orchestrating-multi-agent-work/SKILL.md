@@ -1,8 +1,8 @@
 ---
 name: Orchestrating Multi-Agent Work
 description: Strategic orchestration patterns for spawning, coordinating, and managing multiple subagents based on task complexity and type
-when_to_use: when facing complex tasks with multiple independent domains, architecture decisions with trade-offs, or exploratory investigations requiring parallel approaches
-version: 1.1.0
+when_to_use: BEFORE starting work on complex tasks (3+ independent domains), architecture decisions with trade-offs, or exploratory investigations requiring parallel approaches
+version: 1.2.0
 ---
 
 # Orchestrating Multi-Agent Work
@@ -136,6 +136,11 @@ Each agent needs:
 - Report the failure to the user
 - Ask for help or clarification
 - NEVER fake agent findings by doing work yourself
+
+**Note for subagents:** If you are running as a subagent (spawned via Task tool), you likely do NOT have access to recursively spawn more subagents. This is intentional to prevent infinite recursion. If you encounter this limitation:
+- Report to the user: "I'm a subagent and cannot spawn additional agents"
+- Suggest: "Please work with the main orchestrator to spawn parallel agents"
+- Proceed with single-agent approach ONLY if user explicitly requests it
 
 ### Step 3: Synthesis and Integration
 
