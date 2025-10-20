@@ -2,7 +2,7 @@
 name: Orchestrating Multi-Agent Work
 description: Strategic orchestration patterns for spawning, coordinating, and managing multiple subagents based on task complexity and type
 when_to_use: BEFORE starting work on complex tasks (3+ independent domains), architecture decisions with trade-offs, or exploratory investigations requiring parallel approaches
-version: 1.2.0
+version: 2.0.0
 ---
 
 # Orchestrating Multi-Agent Work
@@ -127,7 +127,7 @@ Task tool with subagent_type="general-purpose":
     Return your findings when complete.
 ```
 
-#### Option B: Codex MCP (Specialized Deep Work)
+#### Option B: Codex Plugin (Specialized Deep Work)
 
 **Use Codex for:**
 - Ultra-complex planning requiring 50+ steps
@@ -135,39 +135,75 @@ Task tool with subagent_type="general-purpose":
 - Large-scale pattern analysis
 - Detailed architecture comparison
 
+```python
+from codex_delegate import delegate
+
+result = delegate(
+    prompt="""
+## Context
+Teams bot performance optimization - investigating database layer.
+
+## Task
+Analyze database query patterns across the codebase and identify performance issues.
+
+## Scope
+- Files: teams_standup_bot.py, database/*.py
+- Focus: Query efficiency, N+1 patterns, indexing
+- Constraints: Do NOT analyze LLM code (separate agent)
+
+## Expected Output
+1. List of performance issues with severity
+2. Specific code locations (file:line)
+3. Recommended fixes with code examples
+4. Estimated performance impact (quantified)
+""",
+    cwd="/path/to/project",
+    sandbox="read-only",
+    timeout=600
+)
 ```
-mcp__codex__codex tool:
-  prompt: |
-    ## Context
-    Teams bot performance optimization - investigating database layer.
 
-    ## Task
-    Analyze database query patterns across the codebase and identify performance issues.
+**Parallel Codex execution (multiple Codex agents):**
+```python
+from codex_delegate import delegate
 
-    ## Scope
-    - Files: teams_standup_bot.py, database/*.py
-    - Focus: Query efficiency, N+1 patterns, indexing
-    - Constraints: Do NOT analyze LLM code (separate agent)
+# Spawn 3 Codex agents in parallel for different domains
+codex_db = delegate(
+    prompt="[Database analysis prompt]",
+    cwd="/path/to/project",
+    background=True  # Non-blocking
+)
 
-    ## Expected Output
-    1. List of performance issues with severity
-    2. Specific code locations (file:line)
-    3. Recommended fixes with code examples
-    4. Estimated performance impact (quantified)
+codex_llm = delegate(
+    prompt="[LLM efficiency prompt]",
+    cwd="/path/to/project",
+    background=True  # Non-blocking
+)
 
-  cwd: /path/to/project
-  sandbox: read-only
+codex_cache = delegate(
+    prompt="[Caching analysis prompt]",
+    cwd="/path/to/project",
+    background=True  # Non-blocking
+)
+
+# Do other work while Codex agents run in parallel...
+
+# Collect results when ready
+db_findings = codex_db.wait().output
+llm_findings = codex_llm.wait().output
+cache_findings = codex_cache.wait().output
 ```
 
 **When to use Codex vs. Task tool:**
 
-| Criteria | Use Task Tool | Use Codex MCP |
-|----------|---------------|---------------|
+| Criteria | Use Task Tool | Use Codex Plugin |
+|----------|---------------|------------------|
 | **Complexity** | Moderate investigation | Ultra-complex (50+ steps) |
 | **Files** | <10 files | 10+ files |
 | **Focus** | Broad exploration | Deep sustained analysis |
 | **Output** | Quick findings | Detailed technical report |
 | **Context needs** | Project context | Technical depth |
+| **Parallel** | Built-in via Task tool | Use background=True |
 
 Each agent needs:
 - **Specific scope:** "Investigate database query performance" (not "optimize everything")
@@ -234,31 +270,87 @@ Then I'll synthesize and decide based on our constraints.
 - Quick findings (Task tool) + detailed planning (Codex)
 - Multiple domains (Task tool) + synthesis (Codex)
 
-**Example Strategy:**
+**Example Strategy 1: Task Tool Investigation + Codex Synthesis**
 
 **Task:** System-wide optimization with 7 issues across 4 domains
 
-```markdown
-Using mixed orchestration: Task tool agents for investigation + Codex for synthesis
+```python
+from codex_delegate import delegate
 
-**Phase 1: Parallel Investigation (Task tool)**
-- Agent 1 (Task): Database performance (issues #1, #4)
-- Agent 2 (Task): LLM efficiency (issues #2, #5)
-- Agent 3 (Task): Memory management (issues #3, #6)
-- Agent 4 (Task): Client initialization (issue #7)
+# Phase 1: Parallel Task tool investigation (spawned via Task tool)
+# [Task agents execute as usual]
 
-**Phase 2: Deep Synthesis (Codex)**
-- Codex: Analyze all findings, create unified optimization plan
-  with priorities, dependencies, implementation sequence
+# Phase 2: Codex synthesis in background while you do other work
+codex_synthesis = delegate(
+    prompt="""
+## Context
+Received findings from 4 investigation agents on system optimization.
 
-Spawning 4 Task agents now...
-[After agents return]
-Delegating synthesis to Codex with all findings...
+## Task
+Analyze all findings and create unified optimization plan with:
+- Priorities based on impact
+- Dependencies between optimizations
+- Implementation sequence
+- Risk assessment
+
+## Agent Findings
+[Include all agent findings here]
+
+## Expected Output
+Comprehensive optimization roadmap
+""",
+    cwd="/path/to/project",
+    sandbox="read-only",
+    background=True,  # Non-blocking
+    timeout=1200  # 20 minutes for deep synthesis
+)
+
+# Do other work while Codex synthesizes...
+# Present initial findings to user, answer questions, etc.
+
+# When ready, get the synthesis
+optimization_plan = codex_synthesis.wait().output
+```
+
+**Example Strategy 2: All Codex Agents in Parallel**
+
+**Task:** Architecture comparison requiring deep analysis
+
+```python
+from codex_delegate import delegate
+
+# Spawn 3 Codex agents in competition mode
+redis_analysis = delegate(
+    prompt="[Advocate for Redis caching with deep technical analysis]",
+    cwd="/path/to/project",
+    background=True
+)
+
+memory_analysis = delegate(
+    prompt="[Advocate for in-memory caching with deep technical analysis]",
+    cwd="/path/to/project",
+    background=True
+)
+
+firestore_analysis = delegate(
+    prompt="[Advocate for Firestore+TTL with deep technical analysis]",
+    cwd="/path/to/project",
+    background=True
+)
+
+# All three Codex agents run in parallel
+# Wait for all to complete
+redis_case = redis_analysis.wait().output
+memory_case = memory_analysis.wait().output
+firestore_case = firestore_analysis.wait().output
+
+# Compare and synthesize competing approaches
 ```
 
 **Why this works:**
 - Task agents do quick, focused investigation (20-30 min each)
-- Codex does deep synthesis requiring sustained focus (1-2 hours)
+- Codex does deep analysis requiring sustained focus (1-2 hours)
+- background=True enables TRUE parallel execution of multiple Codex agents
 - You orchestrate and maintain conversation with user
 - Best tool for each phase of work
 

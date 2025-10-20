@@ -1,17 +1,19 @@
 ---
 name: Delegating to Codex
-description: Strategic delegation patterns for leveraging Codex MCP server for planning, debugging, and code analysis tasks
+description: Strategic delegation patterns for leveraging codex-delegate plugin for planning, debugging, and code analysis tasks
 when_to_use: When facing ultra-complex planning (50+ steps), persistent debugging requiring deep focus, or large-scale code analysis across 10+ files
-version: 1.0.0
+version: 2.0.0
 ---
 
 # Delegating to Codex
 
 ## Overview
 
-**Codex is your specialized partner.** OpenAI's Codex excels at deep, focused technical work that requires sustained attention without context drift.
+**Codex is your specialized partner.** Anthropic's Codex CLI excels at deep, focused technical work that requires sustained attention without context drift.
 
 **Core principle:** Delegate the right tasks to Codex based on cognitive load, not convenience. You remain the orchestrator.
+
+**Performance:** The codex-delegate plugin provides ~50ms overhead vs ~200ms for MCP-based delegation, enabling efficient parallel execution and real-time streaming.
 
 ## When to Delegate to Codex
 
@@ -107,30 +109,63 @@ Help me implement slot filling for the NL→IR pipeline.
 ```
 *(Too vague, no context, no expected output format)*
 
-### Phase 3: Invoke Codex via MCP
+### Phase 3: Invoke Codex via Plugin
 
-**Use the Codex MCP tool:**
+**Use the codex-delegate plugin for ~4x performance improvement:**
 
-```
-mcp__codex__codex tool:
-  prompt: [your structured prompt from Phase 2]
-  cwd: /home/heliosuser/piadda-mvp/NLtoIR
-  sandbox: read-only  (or workspace-write if needed)
-  include-plan-tool: true  (for planning tasks)
+```python
+from codex_delegate import delegate, reply, is_available
+
+# Verify plugin is available (should always be true in Superpowers)
+if not is_available():
+    raise RuntimeError("codex-delegate plugin not found")
+
+# Execute delegation with structured prompt from Phase 2
+result = delegate(
+    prompt="[your structured prompt from Phase 2]",
+    cwd="/home/heliosuser/piadda-mvp/NLtoIR",
+    sandbox="read-only",  # or workspace-write if needed
+    timeout=300  # seconds, adjust based on task complexity
+)
+
+# Result contains: .output, .session_id, .exit_code
 ```
 
 **Sandbox modes:**
-- `read-only` - Code analysis, planning, review (safest)
-- `workspace-write` - Implementation, refactoring
+- `read-only` - Code analysis, planning, review (safest, default)
+- `workspace-write` - Implementation, refactoring (can modify files)
 - `danger-full-access` - System-level tasks (rarely needed)
 
-**Track conversation ID for follow-up:**
-```
-Codex returns: {"conversationId": "abc123", "response": "..."}
+**Track conversation ID for multi-turn dialogue:**
+```python
+# Initial delegation returns session_id for follow-up
+session_id = result.session_id
 
-For follow-up, use mcp__codex__codex-reply:
-  conversationId: "abc123"
-  prompt: "Refine the plan to use LangGraph instead"
+# Continue conversation with refinements
+result2 = reply(
+    conversation_id=session_id,
+    prompt="Refine the plan to use LangGraph instead"
+)
+
+# Session persists with original cwd and sandbox mode
+```
+
+**Background execution for parallel work:**
+```python
+# Start Codex task in background
+task = delegate(
+    prompt="Deep analysis of validation patterns across codebase",
+    cwd="/path/to/project",
+    sandbox="read-only",
+    background=True,
+    on_stream=lambda line: print(f"[Codex] {line}")
+)
+
+# Do other work while Codex runs...
+# ... work on other tasks ...
+
+# Wait for result when needed
+result = task.wait()
 ```
 
 ### Phase 4: Synthesize and Integrate
@@ -227,7 +262,7 @@ You → User: "Found 3 bottlenecks. Database is the critical one: [details]"
 
 **Codex as a specialized subagent:**
 - Use Task tool for general-purpose subagents (exploration, implementation)
-- Use Codex MCP for specialized deep work (planning, architecture analysis)
+- Use codex-delegate plugin for specialized deep work (planning, architecture analysis)
 - Don't delegate orchestration to Codex (you remain orchestrator)
 
 **Example multi-agent strategy:**
@@ -236,7 +271,7 @@ Complex optimization task with 7 issues:
 
 Agent 1 (Task tool): Database performance investigation
 Agent 2 (Task tool): LLM efficiency investigation
-Codex (MCP): Create comprehensive optimization plan synthesizing findings
+Codex (delegate plugin): Create comprehensive optimization plan synthesizing findings
 You (orchestrator): Integrate findings, present to user
 ```
 

@@ -2,7 +2,7 @@
 name: Writing Plans
 description: Create detailed implementation plans with bite-sized tasks for engineers with zero codebase context
 when_to_use: when design is complete and you need detailed implementation tasks for engineers with zero codebase context
-version: 2.1.0
+version: 2.2.0
 ---
 
 # Writing Plans
@@ -52,8 +52,12 @@ Gather from brainstorming:
 - Constraints (DRY, YAGNI, TDD)
 ```
 
-**Step 2: Invoke Codex with structured prompt**
-```
+**Step 2: Invoke Codex via plugin with structured prompt**
+```python
+from codex_delegate import delegate
+
+result = delegate(
+    prompt="""
 ## Context
 [Design summary from brainstorming - 2-3 paragraphs]
 
@@ -86,6 +90,13 @@ Pattern: [describe coding patterns to follow from existing codebase]
 ## Expected Output
 Complete implementation plan in markdown ready to save to:
 docs/plans/YYYY-MM-DD-<feature-name>.md
+""",
+    cwd="/path/to/project",
+    sandbox="read-only",
+    timeout=600  # Complex plans may take 5-10 minutes
+)
+
+plan_content = result.output
 ```
 
 **Step 3: Validate Codex's plan**

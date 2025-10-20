@@ -2,7 +2,7 @@
 name: Dual-Agent Code Review
 description: Leverage both Claude and Codex for comprehensive code reviews that catch more issues through complementary perspectives
 when_to_use: When reviewing critical code (security, architecture, complex logic), large changes (500+ lines), or code with high blast radius
-version: 1.0.0
+version: 2.0.0
 ---
 
 # Dual-Agent Code Review
@@ -70,8 +70,9 @@ Why? Independent reviews catch different issues. If you bias Codex with your fin
 - Code quality metrics (complexity, duplication)
 - Language-specific idioms and best practices
 
-**Codex review prompt:**
-```
+**Codex review prompt template:**
+```python
+codex_review_prompt = """
 ## Context
 [Brief description of what this code does]
 
@@ -97,14 +98,17 @@ For each issue found:
 5. Recommendation: How to fix
 
 Format as a structured list.
-```
+"""
 
-**Invoke via MCP:**
-```
-mcp__codex__codex:
-  prompt: [structured review prompt]
-  cwd: /path/to/project
-  sandbox: read-only
+from codex_delegate import delegate
+
+# Execute Codex review
+codex_result = delegate(
+    prompt=codex_review_prompt,
+    cwd="/path/to/project",
+    sandbox="read-only",
+    timeout=300
+)
 ```
 
 ### Phase 2: Synthesis (Compare and Integrate)
@@ -190,30 +194,44 @@ Reviewed by Claude + Codex. Found X critical, Y high, Z medium issues.
 4. Present to user
 ```
 
-### Pattern 2: Parallel Review (Faster)
+### Pattern 2: Parallel Review (Faster - RECOMMENDED)
 
 **When:** Large changes, want fastest turnaround
 
 **Flow:**
 ```
-1. Spawn Codex review (background MCP call)
+1. Start Codex review in background (background=True)
 2. Claude reviews simultaneously
-3. Wait for Codex to return
+3. Wait for Codex to complete
 4. Synthesize findings
 5. Present to user
 ```
 
-**How to do parallel:**
-```
-# Start Codex review first (it takes longer)
-mcp__codex__codex: [review prompt]
+**How to do TRUE parallel execution:**
+```python
+from codex_delegate import delegate
 
-# While Codex works, do your review
-[Your review process]
+# Start Codex review in background (non-blocking)
+codex_task = delegate(
+    prompt=codex_review_prompt,  # From template above
+    cwd="/path/to/project",
+    sandbox="read-only",
+    background=True,  # KEY: Runs in parallel
+    on_stream=lambda line: print(f"[Codex] {line}")
+)
 
-# Codex returns, synthesize both
-[Synthesis]
+# While Codex works in parallel, do your own review
+your_findings = perform_claude_review()  # Your review logic
+
+# When ready, wait for Codex to complete
+codex_result = codex_task.wait()
+codex_findings = parse_codex_findings(codex_result.output)
+
+# Synthesize both reviews
+unified_review = synthesize_findings(your_findings, codex_findings)
 ```
+
+**Time savings:** With parallel execution, total time = max(claude_time, codex_time) instead of sum. Typically 40-50% faster.
 
 ### Pattern 3: Second Opinion
 
