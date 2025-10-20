@@ -72,6 +72,49 @@ You MUST complete each phase before proceeding to the next.
    - New dependencies, config changes
    - Environmental differences
 
+3a. **Consider Codex Consultation (for complex traces)**
+
+   **WHEN to delegate to Codex during Phase 1:**
+   - Call stack spans 10+ files
+   - Complex async/concurrent execution paths
+   - Multi-layer system with unclear boundaries
+   - Data flow through multiple transformations
+   - You've spent 20+ min tracing without finding source
+
+   **How to use Codex for root cause investigation:**
+   ```
+   Pattern:
+   1. You: Gather initial evidence (error messages, stack trace, reproduction steps)
+   2. Codex: "Trace the root cause of [error] by analyzing [files]. Focus on data flow."
+   3. Codex returns: Detailed trace with identified source
+   4. You: Validate findings, form hypothesis (Phase 3)
+   ```
+
+   **Example prompt for Codex:**
+   ```
+   ## Context
+   NLtoIR workflow executor hitting validation error deep in graph execution.
+
+   ## Task
+   Trace backward from validation error to identify the original source of invalid data.
+
+   ## Evidence
+   - Error: "Node ID 'notify-team' not found in workflow nodes array"
+   - Stack trace: [full trace]
+   - Occurs during graph_executor.validate_edges() call
+
+   ## Expected Output
+   1. Complete backward trace from error to source
+   2. Identify where 'notify-team' ID was introduced
+   3. Root cause explanation
+   4. Recommended fix location (not implementation yet)
+   ```
+
+   **Don't use Codex for:**
+   - Simple, obvious errors (typos, missing imports)
+   - Errors with clear stack traces (<5 files)
+   - When you need to maintain conversational context with user
+
 4. **Gather Evidence in Multi-Component Systems**
 
    **WHEN system has multiple components (CI → build → signing, API → service → database):**
@@ -144,6 +187,43 @@ You MUST complete each phase before proceeding to the next.
    - What other components does this need?
    - What settings, config, environment?
    - What assumptions does it make?
+
+5. **Consider Codex for Large-Scale Pattern Analysis**
+
+   **WHEN to use Codex in Phase 2:**
+   - Need to analyze patterns across 10+ similar files
+   - Comparing multiple reference implementations
+   - Detecting subtle architectural inconsistencies
+   - Finding all instances of problematic pattern
+
+   **Example prompt for Codex:**
+   ```
+   ## Context
+   Workflow validation is failing inconsistently. Working workflows exist in /examples.
+
+   ## Task
+   Compare broken workflow against 5 working examples to identify differences.
+
+   ## Files to Analyze
+   - Broken: /workflows/inventory-check.json
+   - Working: /examples/*.json
+
+   ## Expected Output
+   1. List of differences found (structural, field names, values)
+   2. Pattern violations (deviations from schema)
+   3. Most likely root cause based on comparison
+   4. Similar working code that could serve as fix template
+   ```
+
+   **Codex excels at:**
+   - Systematic comparison across many files
+   - Pattern detection humans might miss
+   - Exhaustive difference enumeration
+
+   **You excel at:**
+   - Understanding business context ("that field shouldn't matter")
+   - Prioritizing which differences are meaningful
+   - Knowing project-specific conventions
 
 ### Phase 3: Hypothesis and Testing
 
@@ -281,6 +361,7 @@ If systematic investigation reveals issue is truly environmental, timing-depende
 ## Integration with Other Skills
 
 This skill works with:
+- skills/collaboration/delegating-to-codex - When to delegate complex debugging to Codex
 - skills/root-cause-tracing - How to trace back through call stack
 - skills/defense-in-depth - Add validation after finding root cause
 - skills/testing/condition-based-waiting - Replace timeouts identified in Phase 2

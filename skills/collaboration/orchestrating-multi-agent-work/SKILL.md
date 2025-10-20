@@ -100,7 +100,9 @@ Spawning agents now...
 
 ### Step 2: Spawn Agents with Clear Boundaries
 
-**How to spawn agents:** Use the Task tool (NOT bash commands or other mechanisms)
+**How to spawn agents:** Use the Task tool for general-purpose agents, or Codex MCP for specialized deep work
+
+#### Option A: Task Tool (General-Purpose Agents)
 
 ```
 Task tool with subagent_type="general-purpose":
@@ -124,6 +126,48 @@ Task tool with subagent_type="general-purpose":
 
     Return your findings when complete.
 ```
+
+#### Option B: Codex MCP (Specialized Deep Work)
+
+**Use Codex for:**
+- Ultra-complex planning requiring 50+ steps
+- Deep trace analysis across 10+ files
+- Large-scale pattern analysis
+- Detailed architecture comparison
+
+```
+mcp__codex__codex tool:
+  prompt: |
+    ## Context
+    Teams bot performance optimization - investigating database layer.
+
+    ## Task
+    Analyze database query patterns across the codebase and identify performance issues.
+
+    ## Scope
+    - Files: teams_standup_bot.py, database/*.py
+    - Focus: Query efficiency, N+1 patterns, indexing
+    - Constraints: Do NOT analyze LLM code (separate agent)
+
+    ## Expected Output
+    1. List of performance issues with severity
+    2. Specific code locations (file:line)
+    3. Recommended fixes with code examples
+    4. Estimated performance impact (quantified)
+
+  cwd: /path/to/project
+  sandbox: read-only
+```
+
+**When to use Codex vs. Task tool:**
+
+| Criteria | Use Task Tool | Use Codex MCP |
+|----------|---------------|---------------|
+| **Complexity** | Moderate investigation | Ultra-complex (50+ steps) |
+| **Files** | <10 files | 10+ files |
+| **Focus** | Broad exploration | Deep sustained analysis |
+| **Output** | Quick findings | Detailed technical report |
+| **Context needs** | Project context | Technical depth |
 
 Each agent needs:
 - **Specific scope:** "Investigate database query performance" (not "optimize everything")
@@ -183,6 +227,41 @@ Each agent will build strongest case for their approach.
 Then I'll synthesize and decide based on our constraints.
 ```
 
+## Mixed Orchestration: Task Tool + Codex
+
+**When to use both:**
+- Broad exploration (Task tool) + deep analysis (Codex)
+- Quick findings (Task tool) + detailed planning (Codex)
+- Multiple domains (Task tool) + synthesis (Codex)
+
+**Example Strategy:**
+
+**Task:** System-wide optimization with 7 issues across 4 domains
+
+```markdown
+Using mixed orchestration: Task tool agents for investigation + Codex for synthesis
+
+**Phase 1: Parallel Investigation (Task tool)**
+- Agent 1 (Task): Database performance (issues #1, #4)
+- Agent 2 (Task): LLM efficiency (issues #2, #5)
+- Agent 3 (Task): Memory management (issues #3, #6)
+- Agent 4 (Task): Client initialization (issue #7)
+
+**Phase 2: Deep Synthesis (Codex)**
+- Codex: Analyze all findings, create unified optimization plan
+  with priorities, dependencies, implementation sequence
+
+Spawning 4 Task agents now...
+[After agents return]
+Delegating synthesis to Codex with all findings...
+```
+
+**Why this works:**
+- Task agents do quick, focused investigation (20-30 min each)
+- Codex does deep synthesis requiring sustained focus (1-2 hours)
+- You orchestrate and maintain conversation with user
+- Best tool for each phase of work
+
 ## Common Mistakes (Rationalizations)
 
 | Excuse | Reality |
@@ -227,12 +306,14 @@ When orchestrating with >200K tokens of context:
 ## Integration with Existing Skills
 
 **This skill is the orchestrator-level strategy. It works with:**
+- `skills/collaboration/delegating-to-codex` - When to use Codex vs Task tool for agents
 - `skills/collaboration/dispatching-parallel-agents` - Tactical patterns for parallel dispatch
 - `skills/collaboration/subagent-driven-development` - Executing implementation plans
 - `skills/debugging/systematic-debugging` - What each debugging agent should follow
 
 **When to use which:**
-- **This skill:** "Should I use multi-agent? How many? What mode?"
+- **This skill:** "Should I use multi-agent? How many? What mode? Task tool or Codex?"
+- **delegating-to-codex:** "Should this specific agent be Codex or Task tool?"
 - **dispatching-parallel-agents:** "I've decided on parallel - how do I execute?"
 - **subagent-driven-development:** "I have a plan with independent tasks to execute"
 

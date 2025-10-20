@@ -28,6 +28,52 @@ Transform rough ideas into fully-formed designs through structured questioning a
 - For each: Core architecture, trade-offs, complexity assessment
 - Ask your human partner which approach resonates
 
+**Optional: Codex Technical Feasibility Check**
+
+For complex or high-risk features, consider consulting Codex to validate technical feasibility BEFORE presenting approaches to user:
+
+**When to consult Codex in Phase 2:**
+- Uncertain about technical feasibility of an approach
+- Need deeper analysis of existing codebase patterns
+- Want to validate that proposed architecture fits existing system
+- Multiple approaches with unclear trade-offs
+
+**How to use Codex:**
+```
+Pattern:
+1. You: Identify 2-3 candidate approaches from requirements
+2. Codex: "Analyze codebase to determine which approach best fits existing architecture"
+3. Codex returns: Technical assessment of each approach
+4. You: Synthesize findings + present approaches to user with informed trade-offs
+```
+
+**Example Codex prompt:**
+```
+## Context
+User wants to add workflow validation for NL→IR pipeline. Current system uses JSON Schema validation.
+
+## Task
+Analyze existing validation patterns and assess feasibility of 3 approaches:
+
+1. Extend JSON Schema with custom validators
+2. Build separate semantic validation layer
+3. Hybrid: Schema + post-validation rules
+
+## Expected Output
+For each approach:
+- Alignment with existing codebase patterns (high/medium/low)
+- Implementation complexity (simple/moderate/complex)
+- Technical risks or blockers
+- Recommendation with reasoning
+```
+
+**Don't use Codex for:**
+- Simple features with obvious approaches
+- When user already specified approach
+- Pure business logic decisions (needs user context)
+
+**Time saved:** 10-15 min vs. exploring dead-end approaches
+
 ### Phase 3: Design Presentation
 - Present in 200-300 word sections
 - Cover: Architecture, components, data flow, error handling, testing
@@ -61,6 +107,7 @@ When your human partner confirms (any affirmative response):
 ## Related Skills
 
 **During exploration:**
+- Technical feasibility analysis: skills/collaboration/delegating-to-codex
 - When approaches have genuine trade-offs: skills/architecture/preserving-productive-tensions
 
 **Before proposing changes to existing code:**
