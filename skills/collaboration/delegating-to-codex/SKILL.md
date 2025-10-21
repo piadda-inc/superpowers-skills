@@ -2,7 +2,7 @@
 name: Delegating to Codex
 description: Strategic delegation patterns for leveraging codex-delegate plugin for planning, debugging, and code analysis tasks
 when_to_use: When facing ultra-complex planning (50+ steps), persistent debugging requiring deep focus, or large-scale code analysis across 10+ files
-version: 2.2.0
+version: 2.3.0
 ---
 
 # Delegating to Codex
@@ -36,6 +36,30 @@ version: 2.2.0
 - **Simple tasks** - Reading files, basic edits, running commands
 
 ## The Codex Delegation Pattern
+
+### Phase 0: Ensure Required Documentation Exists
+
+**Before delegating, verify:**
+
+1. **Check for ARCHITECTURE.md or README.md**
+   - Does the project have tool-agnostic architecture documentation?
+   - If NO → Create it before delegating
+
+2. **Check for AGENTS.md**
+   - User runs `codex init` to create this
+   - Contains Codex-specific workflow guidance
+
+**If ARCHITECTURE.md is missing:**
+
+```bash
+# Option A: Extract from existing CLAUDE.md
+# Read CLAUDE.md, extract architecture sections, write to ARCHITECTURE.md
+
+# Option B: Create from codebase exploration
+# Explore codebase, document architecture, write ARCHITECTURE.md
+```
+
+**Why this matters:** Codex needs architecture context. Creating ARCHITECTURE.md once enables clean delegation forever. Skipping this creates inline duplication in every delegation prompt.
 
 ### Phase 1: Assess Delegation Worthiness
 
@@ -82,10 +106,19 @@ Read /path/to/docs/file.md for [specific subsystem details if needed].
 ```
 
 **Context Management:**
-- **ARCHITECTURE.md** - System architecture (tool-agnostic, single source of truth)
-- **AGENTS.md** - Codex workflow guidance (how Codex should work in this project)
-- **Inline only** - Task-specific details (current problem, decision being made)
-- **Benefits**: DRY principle, version-controlled context, smaller prompts, easier maintenance, tool independence
+
+**Required files for delegation:**
+- **ARCHITECTURE.md** or **README.md** - System architecture (tool-agnostic, single source of truth)
+- **AGENTS.md** - Codex workflow guidance (created by user via `codex init`)
+
+**If ARCHITECTURE.md doesn't exist:** Create it before delegating to Codex
+- Extract architecture from CLAUDE.md if it exists
+- Write new ARCHITECTURE.md based on codebase exploration
+- Ensures clean separation and tool independence
+
+**Always inline:** Task-specific details (current problem, decision being made)
+
+**Benefits of file references**: DRY principle, version-controlled context, smaller prompts, easier maintenance, tool independence
 
 **Example (Good Prompt):**
 ```
