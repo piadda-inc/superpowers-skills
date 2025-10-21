@@ -2,7 +2,7 @@
 name: Delegating to Codex
 description: Strategic delegation patterns for leveraging codex-delegate plugin for planning, debugging, and code analysis tasks
 when_to_use: When facing ultra-complex planning (50+ steps), persistent debugging requiring deep focus, or large-scale code analysis across 10+ files
-version: 3.1.0
+version: 3.2.0
 ---
 
 # Delegating to Codex
@@ -310,17 +310,17 @@ print(f"Security: {ids['security']}")
 print(f"Performance: {ids['performance']}")
 print(f"Architecture: {ids['architecture']}")
 
-# Session 2 (later): Check status and retrieve results
+# CRITICAL: Start watch immediately (tasks complete fast!)
+# Open a terminal NOW and run:
+#   python3 -m codex_delegate.cli watch --verbose
+# This monitors all running tasks and notifies when each completes
+
+# Session 2 (later): Retrieve results
 from codex_delegate import get_task_result, list_background_tasks
 
-# Option 1: List running tasks
+# Check what's still running
 running = list_background_tasks(status='running')
 print(f"Still running: {len(running)}")
-
-# Option 2: Watch and get notified (RECOMMENDED)
-# In a terminal, run:
-#   python3 -m codex_delegate.cli watch --verbose
-# This monitors all running tasks and prints notification when each completes
 
 # Get completed results
 for name, task_id in ids.items():

@@ -2,7 +2,7 @@
 name: Orchestrating Multi-Agent Work
 description: Strategic orchestration patterns for spawning, coordinating, and managing multiple subagents based on task complexity and type
 when_to_use: BEFORE starting work on complex tasks (3+ independent domains), architecture decisions with trade-offs, or exploratory investigations requiring parallel approaches
-version: 2.1.0
+version: 2.2.0
 ---
 
 # Orchestrating Multi-Agent Work
@@ -197,6 +197,20 @@ llm_findings = codex_llm.wait().output
 cache_findings = codex_cache.wait().output
 ```
 
+**For cross-session background tasks:**
+```python
+from codex_delegate import launch_background
+
+# Launch multiple background tasks
+db_id = launch_background("db_analysis", "[Database prompt]", cwd="/path")
+llm_id = launch_background("llm_analysis", "[LLM prompt]", cwd="/path")
+cache_id = launch_background("cache_analysis", "[Cache prompt]", cwd="/path")
+
+# CRITICAL: Start watch immediately in terminal
+# Tasks complete fast (5-30 min), so monitor NOW:
+#   python3 -m codex_delegate.cli watch --verbose
+```
+
 **When to use Codex vs. Task tool:**
 
 | Criteria | Use Task Tool | Use Codex Plugin |
@@ -206,7 +220,8 @@ cache_findings = codex_cache.wait().output
 | **Focus** | Broad exploration | Deep sustained analysis |
 | **Output** | Quick findings | Detailed technical report |
 | **Context needs** | Project context | Technical depth |
-| **Parallel** | Built-in via Task tool | Use background=True |
+| **Parallel** | Built-in via Task tool | Use background=True or launch_background() |
+| **Cross-session** | N/A (Task tool only) | Use launch_background() + watch |
 
 Each agent needs:
 - **Specific scope:** "Investigate database query performance" (not "optimize everything")

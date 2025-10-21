@@ -2,7 +2,7 @@
 name: Dual-Agent Code Review
 description: Leverage both Claude and Codex for comprehensive code reviews that catch more issues through complementary perspectives
 when_to_use: When reviewing critical code (security, architecture, complex logic), large changes (500+ lines), or code with high blast radius
-version: 2.2.0
+version: 2.3.0
 ---
 
 # Dual-Agent Code Review
@@ -305,19 +305,18 @@ review_ids = {
 }
 
 tell_user(f"Launched 3 comprehensive code reviews (IDs: {review_ids}). " +
-          "These will run in the background. I'll check back in a few hours.")
+          "Open a terminal and run: python3 -m codex_delegate.cli watch --verbose")
+
+# CRITICAL: Start watch immediately in a terminal
+# Tasks can complete in 5-10 minutes, so start monitoring NOW:
+#   python3 -m codex_delegate.cli watch --verbose
 
 # Continue with other work or end session...
 
-# SESSION 2: Check and synthesize results
-# ========================================
-# Option 1: List reviews programmatically
+# SESSION 2: Retrieve results (after watch notifies completion)
+# ==============================================================
+# List completed reviews
 reviews = list_background_tasks(status='completed')
-
-# Option 2: Monitor in terminal (RECOMMENDED)
-# In a terminal, run:
-#   python3 -m codex_delegate.cli watch --verbose
-# This watches all running reviews and notifies when each completes
 
 # Get results
 security_result = get_task_result(review_ids['security'])
