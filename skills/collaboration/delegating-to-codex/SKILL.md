@@ -2,7 +2,7 @@
 name: Delegating to Codex
 description: Strategic delegation patterns for leveraging codex-delegate plugin for planning, debugging, and code analysis tasks
 when_to_use: When facing ultra-complex planning (50+ steps), persistent debugging requiring deep focus, or large-scale code analysis across 10+ files
-version: 3.0.0
+version: 3.1.0
 ---
 
 # Delegating to Codex
@@ -310,12 +310,17 @@ print(f"Security: {ids['security']}")
 print(f"Performance: {ids['performance']}")
 print(f"Architecture: {ids['architecture']}")
 
-# Session 2 (later): Retrieve results
+# Session 2 (later): Check status and retrieve results
 from codex_delegate import get_task_result, list_background_tasks
 
-# List all running tasks
+# Option 1: List running tasks
 running = list_background_tasks(status='running')
 print(f"Still running: {len(running)}")
+
+# Option 2: Watch and get notified (RECOMMENDED)
+# In a terminal, run:
+#   python3 -m codex_delegate.cli watch --verbose
+# This monitors all running tasks and prints notification when each completes
 
 # Get completed results
 for name, task_id in ids.items():
@@ -555,6 +560,21 @@ Cross-session async (launch_background()):
   ✓ Want to retrieve results later
   ✓ Other Claude instances might retrieve
   ✓ Overnight/multi-hour analyses
+```
+
+**Monitoring Background Tasks:**
+```bash
+# See what's running
+python3 -m codex_delegate.cli list --status running
+
+# Watch and get notified when tasks complete (RECOMMENDED)
+python3 -m codex_delegate.cli watch --verbose
+
+# Check specific task status
+python3 -m codex_delegate.cli status <task_id>
+
+# Get result from completed task
+python3 -m codex_delegate.cli result <task_id>
 ```
 
 ## Real-World Impact
