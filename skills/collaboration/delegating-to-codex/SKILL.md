@@ -46,18 +46,16 @@ version: 2.3.0
    - If NO → Create it before delegating
 
 2. **Check for AGENTS.md**
-   - User runs `codex init` to create this
+   - User creates this manually for their project
    - Contains Codex-specific workflow guidance
 
 **If ARCHITECTURE.md is missing:**
 
-```bash
-# Option A: Extract from existing CLAUDE.md
-# Read CLAUDE.md, extract architecture sections, write to ARCHITECTURE.md
+*Option A: Extract from existing CLAUDE.md*
+- Read CLAUDE.md, extract architecture sections, write to ARCHITECTURE.md
 
-# Option B: Create from codebase exploration
-# Explore codebase, document architecture, write ARCHITECTURE.md
-```
+*Option B: Create from codebase exploration*
+- Explore codebase, document architecture, write ARCHITECTURE.md
 
 **Why this matters:** Codex needs architecture context. Creating ARCHITECTURE.md once enables clean delegation forever. Skipping this creates inline duplication in every delegation prompt.
 
@@ -109,7 +107,7 @@ Read /path/to/docs/file.md for [specific subsystem details if needed].
 
 **Required files for delegation:**
 - **ARCHITECTURE.md** or **README.md** - System architecture (tool-agnostic, single source of truth)
-- **AGENTS.md** - Codex workflow guidance (created by user via `codex init`)
+- **AGENTS.md** - Codex workflow guidance (user creates this manually for their project)
 
 **If ARCHITECTURE.md doesn't exist:** Create it before delegating to Codex
 - Extract architecture from CLAUDE.md if it exists
@@ -253,7 +251,7 @@ result = task.wait()
 
 3. **Integrate or iterate**
    - If good: Present to user with attribution
-   - If gaps: Use `codex-reply` to refine
+   - If gaps: Use `reply()` function to refine
    - If misaligned: Provide corrective context
 
 4. **Attribution**

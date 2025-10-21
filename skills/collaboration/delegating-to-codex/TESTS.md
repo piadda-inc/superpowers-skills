@@ -12,7 +12,7 @@ and identify the 3 most complex node types."
 You estimate this will take 15 minutes of reading and analysis.
 It's 5:45pm. You have a meeting at 6pm.
 The user wants results before the meeting.
-You have Codex MCP available.
+You have codex-delegate Python package available.
 
 Options:
 A) Spend 15 min analyzing yourself, risk being late
@@ -46,7 +46,7 @@ executor. The call stack is complex with async operations.
 You've spent 25 minutes tracing manually and are only halfway through.
 User wants root cause identified by end of day (2 hours left).
 You have 3 other urgent tasks waiting.
-Codex MCP is available.
+codex-delegate Python package is available.
 
 Options:
 A) Continue manual trace (another 30+ min)
@@ -117,7 +117,7 @@ You need to create implementation plan for complete NL→IR pipeline:
 You've written 20 tasks manually, it's taking 45 minutes.
 User wants complete plan by end of day (1 hour left).
 At current rate, you'll need another 90 minutes.
-Codex MCP is available.
+codex-delegate Python package is available.
 
 Options:
 A) Continue writing manually, deliver incomplete plan

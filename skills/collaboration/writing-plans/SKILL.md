@@ -112,11 +112,68 @@ Review for:
 ✓ Covers edge cases
 ```
 
-**Step 4: Save and present**
+**Step 4: Save plan**
 ```
-Save Codex's plan to docs/plans/YYYY-MM-DD-<feature-name>.md
-Present to user with attribution:
+Save plan to docs/plans/YYYY-MM-DD-<feature-name>.md
+```
+
+**Step 5: Optional Codex Plan Review (Recommended)**
+
+For complex plans, get an independent Codex review to catch gaps:
+
+```python
+from codex_delegate import delegate
+
+# Launch Codex review (can be async or blocking)
+review_result = delegate(
+    prompt="""
+## Context
+Read docs/plans/YYYY-MM-DD-<feature-name>.md
+
+## Task
+Review this implementation plan for completeness and quality.
+
+## Review Criteria
+- Are all tasks bite-sized (2-5 minutes each)?
+- Does every task follow TDD cycle (test → fail → implement → pass → commit)?
+- Are file paths exact and specific?
+- Are code examples complete and runnable?
+- Does the plan cover edge cases and error handling?
+- Are there any gaps or missing steps?
+- Does task order make sense (dependencies respected)?
+
+## Expected Output
+1. Strengths: What the plan does well
+2. Gaps: Missing tasks, edge cases, or steps
+3. Issues: Problems with existing tasks (vague, too large, missing TDD)
+4. Recommendations: Specific improvements with examples
+""",
+    cwd=project_path,
+    sandbox="read-only",
+    timeout=180
+)
+
+# Review Codex's feedback and update plan if needed
+```
+
+**When to use Codex plan review:**
+- Complex plans (30+ tasks, 7+ files)
+- High-risk features (security, performance-critical)
+- First time implementing this type of feature
+- Want independent validation before execution
+
+**Don't use for:**
+- Simple plans (<10 tasks)
+- Trivial features
+- Time-critical situations
+
+**Step 6: Present to user**
+```
+Present to user with attribution (if Codex-generated):
 "Codex generated a comprehensive N-task implementation plan. I've reviewed it and it covers..."
+
+Or (if manually written + Codex reviewed):
+"I've written an N-task plan. Codex reviewed it and confirmed it's comprehensive."
 ```
 
 **Benefits of Codex-generated plans:**
@@ -125,6 +182,12 @@ Present to user with attribution:
 - Consistent formatting throughout
 - Saves 30-60 min for complex features
 
+**Benefits of Codex plan review:**
+- Catches gaps before execution (cheaper than mid-execution fixes)
+- Independent validation (fresh perspective)
+- Quality assurance (ensures bite-sized tasks, TDD compliance)
+- Time cost: 2-3 min (minimal overhead)
+
 ### Option B: Manual Plan Writing (You)
 
 **When to write manually:**
@@ -132,6 +195,12 @@ Present to user with attribution:
 - You have strong context from conversation
 - Quick iterations needed
 - User prefers your direct involvement
+
+**Process:**
+1. Write plan following the structure below (Header + Tasks)
+2. Save to docs/plans/YYYY-MM-DD-<feature-name>.md
+3. **Optional:** Use Step 5 (Codex Plan Review) from Option A for validation
+4. Present to user
 
 [Continue with manual plan structure below]
 
@@ -212,6 +281,7 @@ git commit -m "feat: add specific feature"
 
 ## Remember
 - Consider Codex for complex features (30+ tasks, 7+ files)
+- **Use Codex plan review** for complex/high-risk plans (catches gaps before execution)
 - Validate Codex-generated plans against design requirements
 - Exact file paths always
 - Complete code in plan (not "add validation")

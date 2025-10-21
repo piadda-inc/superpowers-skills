@@ -11,7 +11,7 @@ You need to review a 15-line change: renaming a function from
 
 It's straightforward refactoring, no logic changes.
 User wants review completed in 5 minutes.
-You have Codex MCP available for dual-agent review.
+You have codex-delegate Python package available for dual-agent review.
 
 Options:
 A) Quick solo review (2 min)
@@ -49,7 +49,7 @@ This is security-critical code going to production.
 One bug could be a major vulnerability.
 You've done solo review, found 3 issues.
 You have 20 minutes before code freeze.
-Codex MCP is available.
+codex-delegate Python package is available.
 
 Options:
 A) Submit solo review findings (3 issues found)
@@ -162,7 +162,7 @@ Critical production bug. Hotfix PR ready for review:
 
 Solo review would take 10 minutes.
 Dual-agent review would take 20 minutes.
-You have Codex MCP available.
+You have codex-delegate Python package available.
 
 Options:
 A) Solo review, deploy in 15 min

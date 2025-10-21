@@ -24,31 +24,29 @@ Transform rough ideas into fully-formed designs through structured questioning a
 - Gather: Purpose, constraints, success criteria
 
 ### Phase 2: Exploration
-- Propose 2-3 different approaches
+
+**Step 1: Identify candidate approaches**
+- Based on Phase 1 understanding, identify 2-3 different approaches
 - For each: Core architecture, trade-offs, complexity assessment
-- Ask your human partner which approach resonates
 
-**Optional: Codex Technical Feasibility Check**
+**Step 2: Optional Async Codex Technical Opinion**
 
-For complex or high-risk features, consider consulting Codex to validate technical feasibility BEFORE presenting approaches to user:
+For complex or high-risk features, launch Codex analysis in parallel while you prepare your exploration:
 
-**When to consult Codex in Phase 2:**
-- Uncertain about technical feasibility of an approach
+**When to get async Codex opinion:**
+- Uncertain about technical feasibility of approaches
 - Need deeper analysis of existing codebase patterns
-- Want to validate that proposed architecture fits existing system
+- Want to validate that proposed architectures fit existing system
 - Multiple approaches with unclear trade-offs
+- Complex feature spanning 5+ files
 
-**How to use Codex:**
-```
-Pattern:
-1. You: Identify 2-3 candidate approaches from requirements
-2. Codex: "Analyze codebase to determine which approach best fits existing architecture"
-3. Codex returns: Technical assessment of each approach
-4. You: Synthesize findings + present approaches to user with informed trade-offs
-```
+**Async Pattern (Non-Blocking):**
+```python
+from codex_delegate import delegate
 
-**Example Codex prompt:**
-```
+# Launch Codex analysis in background (non-blocking)
+codex_task = delegate(
+    prompt="""
 ## Context
 User wants to add workflow validation for NL→IR pipeline. Current system uses JSON Schema validation.
 
@@ -65,14 +63,53 @@ For each approach:
 - Implementation complexity (simple/moderate/complex)
 - Technical risks or blockers
 - Recommendation with reasoning
+""",
+    cwd=project_path,
+    sandbox="read-only",
+    background=True,  # KEY: Non-blocking execution
+    timeout=180
+)
+
+# Continue with your own analysis while Codex works in parallel
+# You can prepare your initial thoughts, explore codebase, etc.
 ```
+
+**Step 3: Prepare your own analysis**
+
+While Codex analyzes in background:
+- Explore codebase patterns yourself
+- Draft initial approach descriptions
+- Identify key trade-offs
+
+**Step 4: Synthesize findings**
+
+```python
+# When ready, collect Codex results
+codex_result = codex_task.wait()
+
+# Synthesize: Your analysis + Codex technical assessment
+# Present unified exploration to user with informed trade-offs
+```
+
+**Benefits of async pattern:**
+- **Zero wait time** - Codex runs while you work
+- **Dual perspective** - Your insights + Codex technical depth
+- **Better trade-off analysis** - Technical feasibility validated
+- **Time saved:** 10-15 min vs. exploring dead-end approaches
 
 **Don't use Codex for:**
 - Simple features with obvious approaches
 - When user already specified approach
 - Pure business logic decisions (needs user context)
+- Quick features (<5 files, straightforward implementation)
 
-**Time saved:** 10-15 min vs. exploring dead-end approaches
+**Step 5: Present approaches to user**
+
+Present 2-3 approaches with:
+- Your architectural perspective
+- Codex's technical feasibility assessment (if used)
+- Clear trade-offs for each
+- Ask which approach resonates
 
 ### Phase 3: Design Presentation
 - Present in 200-300 word sections

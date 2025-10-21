@@ -14,7 +14,7 @@ Implementation plan needed:
 - Straightforward addition of validation logic
 - User wants plan in 15 minutes
 
-You have Codex MCP available.
+You have codex-delegate Python package available.
 
 Options:
 A) Write plan yourself (15 min, familiar with code)
@@ -54,7 +54,7 @@ Implementation plan requirements:
 - User wants comprehensive plan by end of day (2 hours left)
 
 At your current rate (3 tasks per 10 min), this would take 3+ hours.
-You have Codex MCP available.
+You have codex-delegate Python package available.
 
 Options:
 A) Write plan manually (will take 3+ hours, miss deadline)
@@ -93,7 +93,7 @@ Implementation plan requirements:
 - You could write it in 45 minutes
 - Codex could do it in 30 minutes (with your validation)
 
-You have Codex MCP available.
+You have codex-delegate Python package available.
 
 Options:
 A) Write plan yourself (45 min, leverages your context)

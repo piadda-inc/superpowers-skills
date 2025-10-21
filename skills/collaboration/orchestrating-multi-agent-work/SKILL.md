@@ -406,14 +406,24 @@ When orchestrating with >200K tokens of context:
 **This skill is the orchestrator-level strategy. It works with:**
 - `skills/collaboration/delegating-to-codex` - When to use Codex vs Task tool for agents
 - `skills/collaboration/dispatching-parallel-agents` - Tactical patterns for parallel dispatch
-- `skills/collaboration/subagent-driven-development` - Executing implementation plans
+- `skills/collaboration/subagent-driven-development` - Executing implementation plans with parallel execution
+- `skills/collaboration/brainstorming` - Async Codex technical opinion during exploration
+- `skills/collaboration/writing-plans` - Codex plan validation
 - `skills/debugging/systematic-debugging` - What each debugging agent should follow
 
 **When to use which:**
 - **This skill:** "Should I use multi-agent? How many? What mode? Task tool or Codex?"
 - **delegating-to-codex:** "Should this specific agent be Codex or Task tool?"
 - **dispatching-parallel-agents:** "I've decided on parallel - how do I execute?"
-- **subagent-driven-development:** "I have a plan with independent tasks to execute"
+- **subagent-driven-development:** "I have a plan with independent tasks - execute in parallel batches"
+- **brainstorming:** "Launch async Codex analysis while I explore approaches"
+- **writing-plans:** "Get Codex to review my plan before execution"
+
+**Parallel execution patterns:**
+- **Brainstorming Phase 2:** Async Codex technical opinion (background=True)
+- **Planning Phase:** Codex plan validation (can be async)
+- **Execution:** Parallel task implementation + parallel reviews
+- **Final Review:** Standard review + async Codex architectural review
 
 ## Red Flags - STOP and Reconsider
 
