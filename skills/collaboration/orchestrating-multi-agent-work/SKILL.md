@@ -2,7 +2,7 @@
 name: Orchestrating Multi-Agent Work
 description: Strategic orchestration patterns for spawning, coordinating, and managing multiple subagents based on task complexity and type
 when_to_use: BEFORE starting work on complex tasks (3+ independent domains), architecture decisions with trade-offs, or exploratory investigations requiring parallel approaches
-version: 2.0.0
+version: 2.1.0
 ---
 
 # Orchestrating Multi-Agent Work
@@ -141,7 +141,10 @@ from codex_delegate import delegate
 result = delegate(
     prompt="""
 ## Context
-Teams bot performance optimization - investigating database layer.
+Read /path/to/ARCHITECTURE.md for system architecture.
+Read /path/to/AGENTS.md for your workflow guidance.
+
+Current focus: Teams bot performance optimization - investigating database layer.
 
 ## Task
 Analyze database query patterns across the codebase and identify performance issues.
@@ -284,6 +287,9 @@ from codex_delegate import delegate
 codex_synthesis = delegate(
     prompt="""
 ## Context
+Read /path/to/ARCHITECTURE.md for system architecture.
+Read /path/to/AGENTS.md for your workflow guidance.
+
 Received findings from 4 investigation agents on system optimization.
 
 ## Task

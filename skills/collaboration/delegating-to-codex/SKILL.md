@@ -2,7 +2,7 @@
 name: Delegating to Codex
 description: Strategic delegation patterns for leveraging codex-delegate plugin for planning, debugging, and code analysis tasks
 when_to_use: When facing ultra-complex planning (50+ steps), persistent debugging requiring deep focus, or large-scale code analysis across 10+ files
-version: 2.0.0
+version: 2.2.0
 ---
 
 # Delegating to Codex
@@ -58,7 +58,11 @@ Cognitive Load: LOW + User Interaction: HIGH = Handle yourself
 
 ```markdown
 ## Context
-[1-2 paragraphs: What is this codebase/system?]
+Read /path/to/ARCHITECTURE.md for system architecture.
+Read /path/to/AGENTS.md for your workflow guidance.
+Read /path/to/docs/file.md for [specific subsystem details if needed].
+
+[Only task-specific context here - current constraints, what's changing, decisions being made]
 
 ## Task
 [Specific, actionable task description]
@@ -77,18 +81,28 @@ Cognitive Load: LOW + User Interaction: HIGH = Handle yourself
 [How will we know this is done correctly?]
 ```
 
+**Context Management:**
+- **ARCHITECTURE.md** - System architecture (tool-agnostic, single source of truth)
+- **AGENTS.md** - Codex workflow guidance (how Codex should work in this project)
+- **Inline only** - Task-specific details (current problem, decision being made)
+- **Benefits**: DRY principle, version-controlled context, smaller prompts, easier maintenance, tool independence
+
 **Example (Good Prompt):**
 ```
 ## Context
-NLtoIR pipeline converts natural language to workflow JSON validated against workflow.schema.json.
+Read /home/heliosuser/piadda-mvp/NLtoIR/ARCHITECTURE.md for pipeline architecture.
+Read /home/heliosuser/piadda-mvp/NLtoIR/AGENTS.md for your workflow guidance.
+Read /home/heliosuser/piadda-mvp/core/workflows/schemas/workflow.schema.json for IR format.
+
+Current focus: Slot filling stage for parameter extraction (F1 target: >0.90).
 
 ## Task
 Create a comprehensive implementation plan for the slot filling stage that extracts structured parameters from conversational turns.
 
 ## Scope
-- Read: workflow.schema.json, NL_to_IR_Pipeline_Context.md
+- Analyze: src/nltoir/modules/ for existing patterns
 - Constraints: Must use DSPy modules, not raw prompts
-- Focus: Parameter extraction accuracy (F1 > 0.90)
+- Focus: Parameter extraction accuracy and edge case handling
 
 ## Expected Output
 1. Architecture diagram (mermaid)
@@ -103,11 +117,33 @@ Create a comprehensive implementation plan for the slot filling stage that extra
 - Identifies 5+ edge cases with handling strategies
 ```
 
-**Anti-pattern (Bad Prompt):**
+**Anti-pattern (Bad Prompt - Vague):**
 ```
 Help me implement slot filling for the NL→IR pipeline.
 ```
 *(Too vague, no context, no expected output format)*
+
+**Anti-pattern (Bad Prompt - Context Duplication):**
+```
+## Context
+PIADDA MVP is a workflow automation platform with three independent projects:
+1. core/ - Workflow runtime execution engine (TypeScript + Python)
+2. NLtoIR/ - Natural language to workflow generation pipeline (Python + DSPy)
+3. capabilities-contract/ - Shared capability registry (JSON contracts)
+
+The NLtoIR pipeline uses a 5-stage DSPy architecture. It converts natural language
+descriptions into executable workflow JSON that conforms to workflow.schema.json.
+The pipeline includes intent understanding, slot filling, schema validation, and
+capability resolution modules. We use Google Gemini (gemini-2.5-flash) as the LLM
+backend and validate outputs against JSON schemas...
+
+[200+ more words of context already in ARCHITECTURE.md]
+
+## Task
+Create implementation plan for slot filling stage.
+...
+```
+*(Duplicates ARCHITECTURE.md content, increases token usage, harder to maintain, violates DRY)*
 
 ### Phase 3: Invoke Codex via Plugin
 
@@ -310,6 +346,8 @@ Phase 1: Root Cause Investigation
 | "Too much overhead to structure prompt" | 2 min structuring → 20 min saved on back-and-forth |
 | "Codex might give wrong answer" | Same risk as you. Review and validate (Phase 4). |
 | "User wants ME to do the work" | User wants best outcome. Use best tool for task. |
+| "Need to embed context so Codex understands" | Reference ARCHITECTURE.md + AGENTS.md. Context duplication = maintenance burden + token waste. |
+| "Inline context is clearer" | Files are version-controlled, searchable, single source of truth. Tool-agnostic. |
 
 ## Red Flags - Consider Codex
 

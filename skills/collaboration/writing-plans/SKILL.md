@@ -2,7 +2,7 @@
 name: Writing Plans
 description: Create detailed implementation plans with bite-sized tasks for engineers with zero codebase context
 when_to_use: when design is complete and you need detailed implementation tasks for engineers with zero codebase context
-version: 2.2.0
+version: 2.3.0
 ---
 
 # Writing Plans
@@ -59,10 +59,10 @@ from codex_delegate import delegate
 result = delegate(
     prompt="""
 ## Context
-[Design summary from brainstorming - 2-3 paragraphs]
+Read /path/to/ARCHITECTURE.md for system architecture and tech stack.
+Read /path/to/AGENTS.md for your workflow guidance.
 
-Tech Stack: [Python, FastAPI, Firestore, etc.]
-Project: [Brief project description]
+Design summary from brainstorming: [2-3 paragraphs of design decisions and requirements]
 
 ## Task
 Create a comprehensive implementation plan following the Writing Plans skill format.
