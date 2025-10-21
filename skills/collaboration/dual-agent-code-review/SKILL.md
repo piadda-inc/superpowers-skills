@@ -2,7 +2,7 @@
 name: Dual-Agent Code Review
 description: Leverage both Claude and Codex for comprehensive code reviews that catch more issues through complementary perspectives
 when_to_use: When reviewing critical code (security, architecture, complex logic), large changes (500+ lines), or code with high blast radius
-version: 2.0.0
+version: 2.1.0
 ---
 
 # Dual-Agent Code Review
@@ -100,15 +100,38 @@ For each issue found:
 Format as a structured list.
 """
 
-from codex_delegate import delegate
+from codex_delegate import delegate, launch_background, get_task_result
 
-# Execute Codex review
+# Option 1: Synchronous (blocks until complete)
 codex_result = delegate(
     prompt=codex_review_prompt,
     cwd="/path/to/project",
     sandbox="read-only",
     timeout=300
 )
+
+# Option 2: In-session async (parallel with your review)
+codex_task = delegate(
+    prompt=codex_review_prompt,
+    cwd="/path/to/project",
+    sandbox="read-only",
+    background=True,
+    timeout=300
+)
+# Do your review while Codex runs...
+codex_result = codex_task.wait()
+
+# Option 3: Cross-session async (for very large codebases)
+# Launch review, continue other work, check results later
+task_id = launch_background(
+    name="security_review",
+    prompt=codex_review_prompt,
+    cwd="/path/to/project",
+    sandbox="read-only",
+    timeout=600  # Longer timeout for deep analysis
+)
+# Later (same or different Claude session):
+# codex_result = get_task_result(task_id)
 ```
 
 ### Phase 2: Synthesis (Compare and Integrate)
@@ -207,7 +230,7 @@ Reviewed by Claude + Codex. Found X critical, Y high, Z medium issues.
 5. Present to user
 ```
 
-**How to do TRUE parallel execution:**
+**How to do TRUE parallel execution (in-session):**
 ```python
 from codex_delegate import delegate
 
@@ -233,7 +256,87 @@ unified_review = synthesize_findings(your_findings, codex_findings)
 
 **Time savings:** With parallel execution, total time = max(claude_time, codex_time) instead of sum. Typically 40-50% faster.
 
-### Pattern 3: Second Opinion
+### Pattern 3: Launch and Continue (Cross-Session)
+
+**When:** Very large codebase (10,000+ lines), deep security audit, or when you need to continue other work immediately
+
+**Flow:**
+```
+SESSION 1:
+1. Launch Codex review(s) as persistent background task(s)
+2. Continue with other work immediately (no blocking)
+3. Optionally start your own review
+
+SESSION 2 (later, same or different Claude instance):
+4. Check if Codex review(s) completed
+5. Retrieve results
+6. Synthesize with your findings (if done) or do your review now
+7. Present unified review to user
+```
+
+**Implementation:**
+```python
+from codex_delegate import launch_background, get_task_status, get_task_result, list_background_tasks
+
+# SESSION 1: Launch multiple specialized reviews
+# ================================================
+user_says = "Please review the entire codebase before our security audit tomorrow"
+
+# Launch 3 specialized Codex reviews that persist across sessions
+review_ids = {
+    'security': launch_background(
+        "security_review",
+        "Deep security audit: SQL injection, XSS, auth bypasses, data exposure",
+        cwd="/path/to/project",
+        timeout=1200  # 20 minutes for thorough analysis
+    ),
+    'architecture': launch_background(
+        "architecture_review",
+        "Architecture review: coupling, cohesion, SOLID violations, design patterns",
+        cwd="/path/to/project",
+        timeout=900
+    ),
+    'quality': launch_background(
+        "quality_review",
+        "Code quality: duplication, complexity, maintainability, tech debt",
+        cwd="/path/to/project",
+        timeout=900
+    )
+}
+
+tell_user(f"Launched 3 comprehensive code reviews (IDs: {review_ids}). " +
+          "These will run in the background. I'll check back in a few hours.")
+
+# Continue with other work or end session...
+
+# SESSION 2: Check and synthesize results
+# ========================================
+# List all reviews
+reviews = list_background_tasks(status='completed')
+
+# Get results
+security_result = get_task_result(review_ids['security'])
+architecture_result = get_task_result(review_ids['architecture'])
+quality_result = get_task_result(review_ids['quality'])
+
+# Synthesize all findings
+unified_review = synthesize_all_reviews([
+    security_result.output,
+    architecture_result.output,
+    quality_result.output
+])
+
+# Present to user
+present_comprehensive_review(unified_review)
+```
+
+**Benefits:**
+- No blocking on long-running reviews
+- Can launch overnight or during off-hours
+- Multiple Claude instances can collaborate
+- Perfect for pre-launch security audits
+
+### Pattern 4: Second Opinion
 
 **When:** You've already reviewed, want validation
 

@@ -2,7 +2,7 @@
 name: Delegating to Codex
 description: Strategic delegation patterns for leveraging codex-delegate plugin for planning, debugging, and code analysis tasks
 when_to_use: When facing ultra-complex planning (50+ steps), persistent debugging requiring deep focus, or large-scale code analysis across 10+ files
-version: 2.3.0
+version: 3.0.0
 ---
 
 # Delegating to Codex
@@ -217,9 +217,9 @@ result2 = reply(
 # Session persists with original cwd and sandbox mode
 ```
 
-**Background execution for parallel work:**
+**Background execution for parallel work (in-session):**
 ```python
-# Start Codex task in background
+# Start Codex task in background thread (same Python session)
 task = delegate(
     prompt="Deep analysis of validation patterns across codebase",
     cwd="/path/to/project",
@@ -228,11 +228,103 @@ task = delegate(
     on_stream=lambda line: print(f"[Codex] {line}")
 )
 
+# Properties available immediately (return None until complete)
+print(f"Task launched: {task.session_id}")  # None initially
+
 # Do other work while Codex runs...
 # ... work on other tasks ...
 
 # Wait for result when needed
 result = task.wait()
+```
+
+**Persistent async execution (cross-session):**
+
+For long-running tasks that need to survive across Claude sessions (like Claude's Task tool for subagents):
+
+```python
+from codex_delegate import launch_background, get_task_status, get_task_result
+
+# CLAUDE SESSION 1: Launch task(s)
+# ==================================
+task_id = launch_background(
+    name="security_audit",
+    prompt="Comprehensive security review of authentication system",
+    cwd="/path/to/project",
+    sandbox="read-only",
+    timeout=600  # 10 minutes for deep analysis
+)
+print(f"Launched: {task_id}")  # e.g., "a1b2c3d4"
+
+# Task runs in detached subprocess - can exit Python session
+# Any Claude instance can retrieve results later
+
+# CLAUDE SESSION 2: Check status (hours later, different instance)
+# ================================================================
+status = get_task_status("a1b2c3d4")
+print(status['status'])  # 'running', 'completed', 'failed'
+
+# CLAUDE SESSION 3: Retrieve result when complete
+# ================================================
+if status['status'] == 'completed':
+    result = get_task_result("a1b2c3d4")
+    print(result['output'])  # Full Codex response
+```
+
+**Choosing execution mode:**
+
+| Mode | Use When | Persistence | Example |
+|------|----------|-------------|---------|
+| **Sync** `delegate()` | Need result immediately | N/A | Quick analysis, single-shot queries |
+| **In-session async** `delegate(..., background=True)` | Parallel work in same session | Lost when Python exits | 3 parallel reviews in current session |
+| **Cross-session async** `launch_background()` | Long-running task, retrieve later | ✅ Survives sessions | Launch overnight analysis, check results next day |
+
+**Cross-session pattern - Launch multiple specialized reviews:**
+```python
+# Session 1: Launch 3 specialized reviews
+from codex_delegate import launch_background
+
+ids = {
+    'security': launch_background(
+        "security_review",
+        "Deep security audit: injection risks, auth bypasses, data exposure",
+        cwd="/path/to/project",
+        timeout=600
+    ),
+    'performance': launch_background(
+        "performance_review",
+        "Performance analysis: N+1 queries, memory leaks, algorithmic complexity",
+        cwd="/path/to/project",
+        timeout=600
+    ),
+    'architecture': launch_background(
+        "architecture_review",
+        "Architecture review: coupling, cohesion, design patterns, SOLID",
+        cwd="/path/to/project",
+        timeout=600
+    )
+}
+
+# Save task IDs for later retrieval
+print(f"Security: {ids['security']}")
+print(f"Performance: {ids['performance']}")
+print(f"Architecture: {ids['architecture']}")
+
+# Session 2 (later): Retrieve results
+from codex_delegate import get_task_result, list_background_tasks
+
+# List all running tasks
+running = list_background_tasks(status='running')
+print(f"Still running: {len(running)}")
+
+# Get completed results
+for name, task_id in ids.items():
+    try:
+        result = get_task_result(task_id)
+        print(f"\n{name.upper()} REVIEW:")
+        print(result['output'])
+    except ValueError:
+        print(f"{name}: Not yet completed")
 ```
 
 ### Phase 4: Synthesize and Integrate
@@ -323,6 +415,41 @@ Codex → You: [Detailed performance analysis with metrics]
 You → User: "Found 3 bottlenecks. Database is the critical one: [details]"
 ```
 
+### Mode 4: Launch and Continue (Cross-Session)
+
+**When:** Long-running analysis that doesn't need to block current work
+
+**Pattern:**
+1. You (Session 1): Launch persistent background task(s)
+2. You: Continue other work immediately (no blocking)
+3. You (Session 2, later): Check status and retrieve results
+4. You: Synthesize and present to user
+
+**Example:**
+```
+User: "I need a comprehensive security audit before our launch"
+
+SESSION 1 (You):
+You → Codex (persistent): "Deep security audit of entire codebase"
+task_id = launch_background("security_audit", prompt, cwd="/path")
+You → User: "Launched comprehensive security audit (task: abc123).
+             I'll continue with other work and check results later."
+
+[Do other work for 30 minutes or hours]
+
+SESSION 2 (You, same or different Claude instance):
+You: Check status: get_task_status("abc123") → 'completed'
+You: Get result: get_task_result("abc123")
+You → User: "Security audit complete. Found 3 critical issues: [details]"
+```
+
+**Benefits:**
+- No blocking on long-running tasks
+- Can launch multiple specialized reviews in parallel
+- Results persist across Claude sessions
+- Other Claude instances can retrieve results
+- Perfect for overnight/long-running analyses
+
 ## Integration with Existing Skills
 
 ### With Orchestrating Multi-Agent Work
@@ -400,6 +527,7 @@ If you catch yourself thinking:
 - [ ] User conversation NOT needed for this specific subtask?
 - [ ] Prepared structured prompt with context, task, scope, expected output?
 - [ ] Chosen appropriate sandbox mode (read-only vs. write)?
+- [ ] Chosen appropriate execution mode (sync, in-session async, cross-session async)?
 - [ ] Plan to validate Codex output against project context?
 - [ ] Will attribute Codex's work when presenting to user?
 
@@ -408,6 +536,26 @@ If you catch yourself thinking:
 - [ ] Task is quick (<5 min)
 - [ ] Requires business/domain knowledge
 - [ ] User wants real-time iteration
+
+**Execution Mode Selection:**
+```
+Sync (delegate()):
+  ✓ Need result immediately
+  ✓ Single-shot query
+  ✓ Quick analysis (<5 min)
+
+In-session async (delegate(..., background=True)):
+  ✓ Parallel work in same session
+  ✓ Need results before session ends
+  ✓ Multiple independent analyses
+
+Cross-session async (launch_background()):
+  ✓ Long-running task (30+ min)
+  ✓ Don't need result immediately
+  ✓ Want to retrieve results later
+  ✓ Other Claude instances might retrieve
+  ✓ Overnight/multi-hour analyses
+```
 
 ## Real-World Impact
 
