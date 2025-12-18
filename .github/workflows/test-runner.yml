@@ -1,0 +1,31 @@
+name: Test Self-Hosted Runner
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  test-runner:
+    runs-on: piadda-runners
+    steps:
+      - name: Test runner environment
+        run: |
+          echo "=== Runner Environment Test ==="
+          echo "Runner hostname: $(hostname)"
+          echo "Runner user: $(whoami)"
+          echo "Runner arch: $(uname -m)"
+          echo "Available CPU cores: $(nproc)"
+          echo "Total memory: $(free -h | awk '/^Mem:/ {print $2}')"
+          echo "Kernel: $(uname -r)"
+          echo ""
+          echo "=== Test completed successfully at $(date) ==="
+      
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Simple command test
+        run: |
+          echo "Job running on self-hosted runner!"
+          echo "Working directory: $(pwd)"
+          ls -la
