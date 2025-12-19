@@ -1,0 +1,22 @@
+name: Test Self-Hosted Runner (Generic)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [test-generic-runner]
+
+jobs:
+  test-runner-generic:
+    runs-on: self-hosted
+    steps:
+      - name: Test runner environment
+        run: |
+          echo "=== Runner Environment Test ==="
+          echo "Runner hostname: $(hostname)"
+          echo "Runner user: $(whoami)"
+          echo "Runner arch: $(uname -m)"
+          echo "Available CPU cores: $(nproc)"
+          echo "Total memory: $(free -h | awk '/^Mem:/ {print $2}')"
+          echo "Kernel: $(uname -r)"
+          echo ""
+          echo "=== Test completed successfully at $(date) ==="
